@@ -1,3 +1,5 @@
+//! The main file of the engine
+
 #![allow(unused)]
 
 extern crate sdl2;
@@ -13,21 +15,37 @@ use core::fmt::{self, Display};
 use warn;
 
 /// A simple vector that is 3d which has 3 common components that represent each dimension.
-/// No fancy maths here folks, just a simple vector.
 #[derive(Debug, Clone)]
 pub struct Vector3D {
+    /// 'x' for the x-axis
     pub x: f32,
+    /// 'y' for the y-axis
     pub y: f32,
+    /// 'z' for the z-axis
     pub z: f32,
 }
 
+// Note that there is no function for this as it just returns a copy of the vector.
 impl Copy for Vector3D {}
 
 impl Vector3D {
+    /// Create a new vector
+    ///
+    /// # Arguments
+    /// * `x` - The x-axis component of the vector
+    /// * `y` - The y-axis component of the vector
+    /// * `z` - The z-axis component of the vector
+    ///
+    /// # Returns
+    /// * `Vector3D` - The new vector
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Self { x, y, z }
     }
 
+    /// Clone an instance of a vector
+    ///
+    /// # Returns
+    /// * `Vector3D` - The cloned vector
     fn clone(&self) -> Vector3D {
         Vector3D {
             x: self.x,
@@ -39,6 +57,10 @@ impl Vector3D {
 
 /// It is handy to have vectors already pre-defined if we don't want to type them out by hand.
 impl Default for Vector3D {
+    /// Create a default vector
+    ///
+    /// # Returns
+    /// * `Vector3D` - The default vector
     fn default() -> Self {
         Vector3D {
             x: 0.0,
@@ -51,6 +73,24 @@ impl Default for Vector3D {
 /// If we want to debug a vector (or multiple) its handy to print them out automatically
 /// instead of by hand.
 impl Display for Vector3D {
+    /// Print the vector
+    ///
+    /// # Arguments
+    /// * `f` - The formatter
+    ///
+    /// # Returns
+    /// * `fmt::Result` - The result of the formatter
+    ///
+    /// # Examples
+    /// ```
+    /// let vector = Vector3D::new(1.0, 1.0, 1.0);
+    /// println!("{}", vector);
+    ///
+    /// // Output:
+    /// // X: 1
+    /// // Y: 1
+    /// // Z: 1
+    /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "X: {}\nY :{}\nZ: {}\n", self.x, self.y, self.z)
     }
@@ -63,13 +103,19 @@ impl Display for Vector3D {
 /// to a group of triangles, as they ultimately require less processing power.
 #[derive(Debug)]
 pub struct Triangle {
-    /// 'mat' stands for matrix
+    /// `a` - The first vector in the triangle
     pub a: Vector3D,
+    /// `b` - The second vector in the triangle
     pub b: Vector3D,
+    /// `c` - The third vector in the triangle
     pub c: Vector3D,
 }
 
 impl Clone for Triangle {
+    /// Clone the triangle
+    ///
+    /// # Returns
+    /// * `Triangle` - The cloned triangle
     fn clone(&self) -> Self {
         Self {
             a: self.a.clone(),
@@ -80,6 +126,10 @@ impl Clone for Triangle {
 }
 
 impl Default for Triangle {
+    /// Create a default triangle with all values set to 0
+    ///
+    /// # Returns
+    /// * `Triangle` - The default triangle
     fn default() -> Self {
         Self {
             a: Vector3D::default(),
@@ -89,28 +139,30 @@ impl Default for Triangle {
     }
 }
 
+/// Matrix struct for the projection matrix and model matrix
 pub struct Matrix {
+    /// `mat` - The matrix itself
     pub mat: [[f32; 4]; 4],
 }
 
 impl Matrix {
+    /// Create a new matrix
+    ///
+    /// # Arguments
+    /// * `mat` - The matrix itself
+    ///
+    /// # Returns
+    /// * `Matrix` - The new matrix
     pub fn new(mat: [[f32; 4]; 4]) -> Self {
         Self { mat }
-    }
-
-    pub fn identity() -> Self {
-        Self {
-            mat: [
-                [1.0, 0.0, 0.0, 0.0], // X
-                [0.0, 1.0, 0.0, 0.0], // Y
-                [0.0, 0.0, 1.0, 0.0], // Z
-                [0.0, 0.0, 0.0, 1.0], // W
-            ],
-        }
     }
 }
 
 impl Clone for Matrix {
+    /// Clone the matrix
+    ///
+    /// # Returns
+    /// * `Matrix` - The cloned matrix
     fn clone(&self) -> Self {
         Self {
             mat: self.mat.clone(),
@@ -119,6 +171,10 @@ impl Clone for Matrix {
 }
 
 impl Default for Matrix {
+    /// Create a default matrix with all values set to 0
+    ///
+    /// # Returns
+    /// * `Matrix` - The default matrix
     fn default() -> Self {
         Self { mat: [[0.0; 4]; 4] }
     }
@@ -127,6 +183,12 @@ impl Default for Matrix {
 impl Triangle {
     /// This function is an alternative to a raw if statement since doing the alternative if
     /// statement would break the code under E0317 (if expressions with else evaluate to `()`)
+    ///
+    /// # Arguments
+    /// * `mat` - The matrix to check
+    ///
+    /// # Returns
+    /// * `Option<&'static str>` - The warning if the matrix is too big
     pub fn warn_triangle_size(mat: &[Vector3D; 3]) -> Option<&'static str> {
         if mat.len() > 3 {
             Some("Triangle is too big, consider splitting it up")
@@ -135,10 +197,26 @@ impl Triangle {
         }
     }
 
+    /// Create a new triangle
+    ///
+    /// # Arguments
+    /// * `a` - The first vector in the triangle
+    /// * `b` - The second vector in the triangle
+    /// * `c` - The third vector in the triangle
+    ///
+    /// # Returns
+    /// * `Triangle` - The new triangle
     pub fn new(a: Vector3D, b: Vector3D, c: Vector3D) -> Self {
         Self { a, b, c }
     }
 
+    /// Draw the triangle on the screen
+    ///
+    /// # Arguments
+    /// * `canvas` - The canvas to draw the triangle on
+    ///
+    /// # Returns
+    /// * `()` - Nothing
     pub fn draw(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) -> () {
         canvas.draw_line(
             sdl2::rect::Point::new(self.a.x as i32, self.a.y as i32),
@@ -165,6 +243,13 @@ pub struct Mesh {
 }
 
 impl<W> warn::Warn<W> for Mesh {
+    /// Print a warning to the console
+    ///
+    /// # Arguments
+    /// * `warning` - The warning to print
+    ///
+    /// # Returns
+    /// * `()` - Nothing
     fn warn(&mut self, warning: W) -> () {
         println!("{}", stringify!(warning))
     }
@@ -183,6 +268,12 @@ impl Mesh {
 
     /// This function is an alternative to a raw if statement since doing the alternative if
     /// statement would break the code under E0317 (if expressions with else evaluate to `()`)
+    ///
+    /// # Arguments
+    /// * `mat` - The matrix to check
+    ///
+    /// # Returns
+    /// * `Option<&'static str>` - The warning if the matrix is too big
     pub fn warn_mesh_size(mat: &Vec<Triangle>) -> Option<&'static str> {
         if mat.len() > Mesh::VECTOR_LIMIT {
             Some("Mesh is too big, consider splitting it up")
@@ -191,16 +282,50 @@ impl Mesh {
         }
     }
 
+    /// Draw the mesh on the screen
+    ///
+    /// # Arguments
+    /// * `canvas` - The canvas to draw the mesh on
+    ///
+    /// # Returns
+    /// * `()` - Nothing
     pub fn draw(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) -> () {
-        for triangle in &self.mat {}
+        unimplemented!()
     }
 
+    /// Create a new mesh
+    ///
+    /// # Arguments
+    /// * `mat` - The matrix to create the mesh from
+    ///
+    /// # Returns
+    /// * `Mesh` - The new mesh
     fn new(mat: Vec<Triangle>) -> Self {
         Self::warn_mesh_size(&mat);
         Self { mat }
     }
 }
 
+/// Multiply a vector by a Matrix
+///
+/// # Arguments
+///
+/// * `i` - The input vector
+/// * `o` - The output vector
+/// * `m` - The matrix to multiply the vector by
+///
+/// # Returns
+/// * `o` - The output vector
+///
+/// # Examples
+/// ```
+/// let mut input_vector = Vector3D::new(1.0, 1.0, 1.0);
+/// let mut output_vector = Vector3D::default();
+/// let matrix = Matrix::default();
+/// multiply_matrix_vector(&input_vector, &mut output_vector, &matrix);
+///
+/// assert_eq!(output_vector, Vector3D::default());
+/// ```
 pub fn multiply_matrix_vector<'a>(
     i: &'a Vector3D,
     o: &'a mut Vector3D,
@@ -221,6 +346,7 @@ pub fn multiply_matrix_vector<'a>(
     o
 }
 
+/// The main function of the engine (also runs the game loop)
 pub fn main() {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();

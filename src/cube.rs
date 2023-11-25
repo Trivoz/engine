@@ -1,5 +1,13 @@
+//! Contains a pre-defined cube mesh - defined as a unit
+//! cube as it is scaled (and projected) seperately
+
 use crate::{Mesh, Triangle, Vector3D};
 
+/// A function that is used to get a pre-defined cube mesh.
+///
+/// # Returns
+/// * `Mesh` - The pre-defined cube mesh
+///
 pub fn get_cube_mesh() -> Mesh {
     let mesh_vertices = vec![
         // SOUTH
